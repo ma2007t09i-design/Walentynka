@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Walentynka ❤️</title>
+  <style>
+    :root{
+      --bg1:#0b0b12;
+      --bg2:#1a0b18;
+      --txt: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+      --card: rgba(255,255,255,.07);
+      --border: 1px solid rgba(255,255,255,.12);
+      --accent:#ff4d8d;
+      --accent2:#ff9ad5;
+      --good:#35d07f;
+      --bad:#ff3b3b;
+      --shadow: 0 24px 80px rgba(0,0,0,.45);
+      --radius: 26px;
+    }
+
+    *{ box-sizing:border-box }
+    html,body{ height:100% }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--txt);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(255,77,141,.18), transparent 50%),
+        radial-gradient(900px 700px at 90% 30%, rgba(255,154,213,.14), transparent 55%),
+        radial-gradient(900px 700px at 50% 95%, rgba(53,208,127,.10), transparent 55%),
+        linear-gradient(140deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+    }
+
+    /* === TŁO ZE ZDJĘCIAMI (3 szt.) === */
+    #bgLayer{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      overflow:hidden;
+    }
+    .bgimg{
+      position:absolute;
+      right: max(-6vw, -40px);
+      width: min(42vw, 420px);
+      max-height: 70vh;
+      object-fit: cover;
+      border-radius: 24px;
+      opacity: .60;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 30px 90px rgba(0,0,0,.55);
+      filter: saturate(1.05) contrast(1.02);
+      display:none;
+    }
+    .bgimg.i1{ top: 10%; transform: rotate(6deg); }
+    .bgimg.i2{
+      top: 36%;
+      right: max(-10vw, -70px);
+      width: min(36vw, 360px);
+      opacity: .65;
+      transform: rotate(-4deg);
+    }
+    .bgimg.i3{
+      top: 62%;
+      right: max(-2vw, -20px);
+      width: min(34vw, 340px);
+      opacity: .55;
+      transform: rotate(8deg);
+    }
+    @media (max-width: 650px){
+      .bgimg{ opacity:.10; width:min(70vw, 420px); right:-22vw; }
+      .bgimg.i2,.bgimg.i3{ display:none !important; } /* na telefonie zostaje 1 tło */
+    }
+
+    /* Full-page screens */
+    .screen{
+      position:fixed;
+      inset:0;
+      display:none;
+      padding: clamp(16px, 3vw, 32px);
+      overflow:auto;
+      z-index:1;
+    }
+    .screen.active{ display:flex; align-items:center; justify-content:center; }
+
+    .wrap{
+      width:min(900px, 100%);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      position:relative;
+      z-index:2;
+    }
+
+    .card{
+      background: var(--card);
+      border: var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(16px, 3vw, 26px);
+      backdrop-filter: blur(10px);
+    }
+
+    h1{ margin:0; font-size: clamp(28px, 4.2vw, 44px); line-height:1.08; }
+    h2{ margin:0; font-size: clamp(22px, 3.4vw, 34px); line-height:1.12; }
+    h3{ margin:0; font-size: clamp(18px, 2.8vw, 22px); }
+    p{ margin:0; color:var(--muted); line-height:1.55; font-size: 15.5px; }
+
+    .center{ text-align:center; }
+    .accent{ color: var(--accent); }
+    .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center; }
+    .spacer{ height:8px; }
+
+    .btn{
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.10);
+      color: var(--txt);
+      padding: 12px 16px;
+      border-radius: 16px;
+      cursor:pointer;
+      font-weight: 750;
+      letter-spacing:.2px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+      min-width: 140px;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.16); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+
+    .btn.good{
+      background: linear-gradient(135deg, rgba(53,208,127,.26), rgba(53,208,127,.10));
+      border-color: rgba(53,208,127,.45);
+    }
+    .btn.bad{
+      background: linear-gradient(135deg, rgba(255,59,59,.22), rgba(255,59,59,.08));
+      border-color: rgba(255,59,59,.45);
+    }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(255,77,141,.36), rgba(255,154,213,.18));
+      border-color: rgba(255,77,141,.50);
+    }
+
+    /* Hearts */
+    .hearts{ position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:3; }
+    .heart{
+      position:absolute; width:14px; height:14px;
+      transform: rotate(45deg);
+      opacity:0;
+      animation: floatUp 2.6s ease-in forwards;
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.35));
+      background: var(--accent);
+    }
+    .heart::before, .heart::after{
+      content:"";
+      position:absolute;
+      width:14px; height:14px;
+      background: inherit;
+      border-radius:50%;
+    }
+    .heart::before{ left:-7px; top:0; }
+    .heart::after{ left:0; top:-7px; }
+
+    @keyframes floatUp{
+      0%{ transform: translateY(40px) rotate(45deg) scale(.8); opacity:0 }
+      12%{ opacity:.95 }
+      100%{ transform: translateY(-520px) rotate(45deg) scale(1.4); opacity:0 }
+    }
+
+    /* Quiz */
+    .quizTop{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .badge{
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+    .options{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top: 14px;
+    }
+    @media (max-width:650px){ .options{ grid-template-columns: 1fr; } }
+
+    .opt{
+      text-align:left;
+      padding: 12px 12px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      cursor:pointer;
+      transition: transform .1s ease, background .12s ease, border-color .12s ease;
+    }
+    .opt:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); }
+    .opt.selected{ border-color: rgba(255,154,213,.65); background: rgba(255,154,213,.10); }
+    .opt.correct{ border-color: rgba(53,208,127,.70); background: rgba(53,208,127,.12); }
+    .opt.wrong{ border-color: rgba(255,59,59,.60); background: rgba(255,59,59,.10); }
+
+    /* Counter */
+    .counter{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+      margin-top: 14px;
+    }
+    .tile{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 12px;
+      text-align:center;
+    }
+    .num{ font-size: clamp(22px, 4vw, 34px); font-weight: 860; letter-spacing:.4px; }
+    .lbl{ font-size: 12px; color: var(--muted); }
+    @media (max-width:520px){ .counter{ grid-template-columns: repeat(2, 1fr); } }
+
+    .tiny{ font-size: 12.5px; color: rgba(255,255,255,.62); }
+  </style>
+</head>
+<body>
+
+  <!-- 3 zdjęcia tła (podmieniane per slajd) -->
+  <div id="bgLayer">
+    <img id="bg1" class="bgimg i1" alt="">
+    <img id="bg2" class="bgimg i2" alt="">
+    <img id="bg3" class="bgimg i3" alt="">
+  </div>
+
+  <div class="hearts" id="hearts"></div>
+
+  <!-- Screen 1 -->
+  <section class="screen active" id="s1">
+    <div class="wrap">
+      <div class="card center">
+        <h1 id="q1">Czy zostaniesz moją <span class="accent">walentynką</span>? ❤️</h1>
+        <div class="spacer"></div>
+        <p id="q1sub">Kliknij proszę… 😌</p>
+        <div class="spacer"></div>
+        <div class="row">
+          <button class="btn good" id="btnYes1">TAK 💚</button>
+          <button class="btn bad" id="btnNo1">NIE 😅</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 2 (repeat after NO) -->
+  <section class="screen" id="s2">
+    <div class="wrap">
+      <div class="card center">
+        <h2 id="repeatTitle">Ponownie pytam…</h2>
+        <div class="spacer"></div>
+        <h1 id="q2">Czy zostaniesz moją <span class="accent">walentynką</span>? ❤️</h1>
+        <div class="spacer"></div>
+        <p id="repeatHint">No dawaj, kliknij TAK 😉</p>
+        <div class="spacer"></div>
+        <div class="row">
+          <button class="btn good" id="btnYes2">TAK 💚</button>
+          <button class="btn bad" id="btnNo2">NIE 😅</button>
+        </div>
+        <div class="spacer"></div>
+        <p class="tiny" id="triesTxt">Próby: 1</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quiz -->
+  <section class="screen" id="s3">
+    <div class="wrap">
+      <div class="card">
+        <div class="quizTop">
+          <div>
+            <h2>Quiz o nas 🧠❤️</h2>
+            <p class="tiny">Zaznacz odpowiedź i kliknij „Dalej”.</p>
+          </div>
+          <div class="badge" id="progressBadge">1/1</div>
+        </div>
+
+        <div class="spacer"></div>
+        <h3 id="quizQ">Pytanie</h3>
+        <p class="tiny" id="multiHint" style="display:none;margin-top:6px;">
+          To pytanie ma <b>wiele poprawnych</b> odpowiedzi — możesz zaznaczyć kilka.
+        </p>
+
+        <div class="options" id="opts"></div>
+
+        <div class="spacer"></div>
+        <div class="row" style="justify-content:space-between;">
+          <div class="badge" id="scoreBadge">Wynik: 0</div>
+          <button class="btn primary" id="nextBtn">Dalej →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final -->
+  <section class="screen" id="s4">
+    <div class="wrap">
+      <div class="card center">
+        <h1 id="finalTitle">Czekam na Ciebie ❤️</h1>
+        <div class="spacer"></div>
+        <p id="finalSub">I liczę dni…</p>
+
+        <div class="counter">
+          <div class="tile"><div class="num" id="d">0</div><div class="lbl">dni</div></div>
+          <div class="tile"><div class="num" id="h">00</div><div class="lbl">godzin</div></div>
+          <div class="tile"><div class="num" id="m">00</div><div class="lbl">minut</div></div>
+          <div class="tile"><div class="num" id="s">00</div><div class="lbl">sekund</div></div>
+        </div>
+
+        <div class="spacer"></div>
+        <p class="tiny" id="finalScore">Twój wynik z quizu: 0/0</p>
+
+        <div class="spacer"></div>
+        <div class="row">
+          <button class="btn" id="restart">Zacznij od nowa</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<script>
+/* =========================
+   CONFIG — EDYTUJ TUTAJ
+   ========================= */
+const CONFIG = {
+  // Teksty:
+  q1: "Czy zostaniesz moją walentynką? ❤️",
+  q1sub: "Kliknij proszę… 😌",
+  repeatTitle: "Ponownie pytam…",
+  repeatHintBase: [
+    "No dawaj, kliknij TAK 😉",
+    "Ej no… jeszcze raz pytam 😭",
+    "Nie udawaj… kliknij TAK ❤️",
+    "Dobra, ostatni raz… (żartuję) 😄"
+  ],
+  finalTitle: "Czekam na Ciebie ❤️",
+  finalSub: "I liczę dni…",
+
+  // Licznik (od kiedy) — zmień na waszą datę:
+  since: "2024-04-05T00:00:00",
+
+  /* =========================
+     TUTAJ DODAJESZ ZDJĘCIA TŁA (3 na slajd)
+     - wrzuć pliki do folderu obok index.html, np. /img/1.jpg
+     - i wpisz ścieżki niżej
+     - możesz dać inne 3 na każdy slajd
+     ========================= */
+  bgImages: {
+    s1: ["img/1.png", "img/2.png", ],
+    s2: ["img/3.png", "img/4.png", "img/5.png"],
+    s3: ["img/8.png", "img/7.png", "img/6.png"],
+    s4: ["img/9.png",  ]
+  },
+
+  // Quiz:
+  // correct: liczba (jedna poprawna) albo tablica (wiele poprawnych)
+  quiz: [
+    {
+      q: "Gdzie była nasza pierwsza randka?",
+      options: ["Kino", "Pizza w Katowicach", "U Ciebie w domu", "U mnie w domu"],
+      correct: 1 // POPRAWNA: Pizza w Katowicach
+    },
+    {
+      q: "Kto pierwszy powiedział „kocham cię”?",
+      options: ["Ja", "Mój chłopak Mati"],
+      correct: 1 // POPRAWNA: Mój chłopak Mati
+    },
+    {
+      q: "Jakie kwiaty Mati kupuje mi najczęściej?",
+      options: ["Tulipany", "Róże", "Hortensje", "Słoneczniki"],
+      correct: 1 // POPRAWNA: Róże
+    }
+  ]
+};
+
+/* =========================
+   HELPERS
+   ========================= */
+const $ = (id) => document.getElementById(id);
+const screens = { s1: $("s1"), s2: $("s2"), s3: $("s3"), s4: $("s4") };
+
+function show(name){
+  Object.values(screens).forEach(s => s.classList.remove("active"));
+  screens[name].classList.add("active");
+  screens[name].scrollTop = 0;
+  setBackgroundFor(name);
+}
+
+function pad(n){ return String(n).padStart(2, "0"); }
+
+/* Background images (3) per screen */
+const bgEls = [$("bg1"), $("bg2"), $("bg3")];
+function setBackgroundFor(screenId){
+  const imgs = (CONFIG.bgImages && CONFIG.bgImages[screenId]) ? CONFIG.bgImages[screenId] : [];
+  bgEls.forEach((el, i)=>{
+    const src = imgs[i] || "";
+    if(src){
+      el.src = src;
+      el.style.display = "block";
+      el.onerror = () => { el.style.display = "none"; };
+    } else {
+      el.removeAttribute("src");
+      el.style.display = "none";
+    }
+  });
+}
+
+/* Hearts burst */
+const heartsWrap = $("hearts");
+function hearts(burst=18){
+  const w = window.innerWidth;
+  for(let i=0;i<burst;i++){
+    const el = document.createElement("div");
+    el.className = "heart";
+    const x = Math.random()*w;
+    const size = 10 + Math.random()*14;
+    const hue = 325 + Math.random()*35;
+    el.style.left = x + "px";
+    el.style.bottom = "-16px";
+    el.style.width = size + "px";
+    el.style.height = size + "px";
+    el.style.background = `hsl(${hue} 90% 65%)`;
+    el.style.animationDelay = (Math.random()*0.25) + "s";
+    heartsWrap.appendChild(el);
+    setTimeout(()=>el.remove(), 3200);
+  }
+}
+
+/* =========================
+   PAGE 1 / PAGE 2 logic
+   ========================= */
+$("q1").textContent = CONFIG.q1;
+$("q1sub").textContent = CONFIG.q1sub;
+$("repeatTitle").textContent = CONFIG.repeatTitle;
+$("finalTitle").textContent = CONFIG.finalTitle;
+$("finalSub").textContent = CONFIG.finalSub;
+
+// ustaw tło startowe:
+setBackgroundFor("s1");
+
+let tries = 0;
+function updateRepeatHint(){
+  const idx = Math.min(tries-1, CONFIG.repeatHintBase.length-1);
+  $("repeatHint").textContent = CONFIG.repeatHintBase[idx] || "Kliknij TAK ❤️";
+  $("triesTxt").textContent = "Próby: " + tries;
+}
+
+$("btnNo1").addEventListener("click", ()=>{
+  tries = 1;
+  updateRepeatHint();
+  hearts(12);
+  show("s2");
+});
+
+$("btnNo2").addEventListener("click", ()=>{
+  tries++;
+  updateRepeatHint();
+  hearts(14);
+  // zostajemy na s2
+});
+
+$("btnYes1").addEventListener("click", ()=>{
+  hearts(24);
+  startQuiz();
+  show("s3");
+});
+
+$("btnYes2").addEventListener("click", ()=>{
+  hearts(24);
+  startQuiz();
+  show("s3");
+});
+
+/* =========================
+   QUIZ
+   ========================= */
+let qi = 0;
+let score = 0;
+let selected = new Set();
+
+function isMulti(q){
+  return Array.isArray(q.correct);
+}
+function correctSet(q){
+  return new Set(Array.isArray(q.correct) ? q.correct : [q.correct]);
+}
+function setsEqual(a,b){
+  if(a.size !== b.size) return false;
+  for(const v of a) if(!b.has(v)) return false;
+  return true;
+}
+
+function renderQuiz(){
+  const q = CONFIG.quiz[qi];
+  $("progressBadge").textContent = `${qi+1}/${CONFIG.quiz.length}`;
+  $("scoreBadge").textContent = `Wynik: ${score}`;
+  $("quizQ").textContent = q.q;
+
+  selected = new Set();
+  const multi = isMulti(q);
+  $("multiHint").style.display = multi ? "block" : "none";
+
+  const opts = $("opts");
+  opts.innerHTML = "";
+
+  q.options.forEach((text, idx)=>{
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.type = "button";
+    b.textContent = text;
+
+    b.addEventListener("click", ()=>{
+      if(multi){
+        if(selected.has(idx)) selected.delete(idx);
+        else selected.add(idx);
+        b.classList.toggle("selected");
+      } else {
+        selected = new Set([idx]);
+        Array.from(opts.children).forEach(x => x.classList.remove("selected"));
+        b.classList.add("selected");
+      }
+    });
+
+    opts.appendChild(b);
+  });
+
+  $("nextBtn").textContent = (qi === CONFIG.quiz.length - 1) ? "Zakończ →" : "Dalej →";
+}
+
+function gradeAndReveal(){
+  const q = CONFIG.quiz[qi];
+  const c = correctSet(q);
+  const opts = Array.from($("opts").children);
+
+  opts.forEach((b, idx)=>{
+    b.disabled = true;
+    if(c.has(idx)) b.classList.add("correct");
+  });
+
+  const ok = setsEqual(selected, c);
+  if(!ok){
+    selected.forEach(i => { if(!c.has(i)) opts[i]?.classList.add("wrong"); });
+  } else {
+    score++;
+    hearts(18);
+  }
+  $("scoreBadge").textContent = `Wynik: ${score}`;
+}
+
+$("nextBtn").addEventListener("click", ()=>{
+  if(selected.size === 0){
+    alert("Zaznacz odpowiedź 🙂");
+    return;
+  }
+
+  gradeAndReveal();
+
+  setTimeout(()=>{
+    qi++;
+    if(qi < CONFIG.quiz.length){
+      renderQuiz();
+    } else {
+      $("finalScore").textContent = `Twój wynik z quizu: ${score}/${CONFIG.quiz.length}`;
+      show("s4");
+    }
+  }, 650);
+});
+
+function startQuiz(){
+  qi = 0;
+  score = 0;
+  renderQuiz();
+}
+
+/* =========================
+   COUNTER (final)
+   ========================= */
+const startDate = new Date(CONFIG.since);
+function tick(){
+  const now = new Date();
+  const diff = Math.max(0, now - startDate);
+  const sec = Math.floor(diff / 1000);
+  const days = Math.floor(sec / 86400);
+  const hours = Math.floor((sec % 86400) / 3600);
+  const mins = Math.floor((sec % 3600) / 60);
+  const secs = sec % 60;
+
+  $("d").textContent = days;
+  $("h").textContent = pad(hours);
+  $("m").textContent = pad(mins);
+  $("s").textContent = pad(secs);
+}
+setInterval(tick, 1000);
+tick();
+
+/* Restart */
+$("restart").addEventListener("click", ()=>{
+  tries = 0;
+  qi = 0;
+  score = 0;
+  show("s1");
+});
+</script>
+</body>
+</html>
